@@ -7,4 +7,8 @@ class QPythonConsole : public QConsole {
 public:
 	QPythonConsole(QWidget *parent = NULL, const QString &welcomeText = "");
 	virtual ~QPythonConsole();
+
+	public Q_SLOTS:
+		void ExecuteAndPrintResults(const QString &command);
+
 };

@@ -211,7 +211,7 @@ void QConsole::reset(const QString &welcomeText)
 //QConsole constructor (init the QTextEdit & the attributes)
 QConsole::QConsole(QWidget *parent, const QString &welcomeText)
     : QTextEdit(parent), errColor_(Qt::red),
-      outColor_(Qt::white), completionColor(Qt::darkGreen),
+      outColor_(Qt::black), completionColor(Qt::darkGreen),
       promptLength(0), promptParagraph(0), isLocked(false)
 {
     // Disable accepting rich text from user
