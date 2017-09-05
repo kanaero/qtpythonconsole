@@ -5,6 +5,10 @@ if(NOT ${CMAKE_VERSION} VERSION_LESS 3.0.0)
     cmake_policy(SET CMP0043 OLD)
 endif()
 
+if(MSVC)
+add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+endif()
+
 #### Set path to your pybind11
 set(PYBIND11_DIR $ENV{NL_DIR}/pybind11)
 set(QT5_ROOT D:/Qt/5.10.0/msvc2017_64)
