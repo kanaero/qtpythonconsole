@@ -10,6 +10,7 @@ namespace py = pybind11;
 
 
 
+static QString out_text;
 class Redirector {
 public:
 	Redirector() {}
@@ -17,16 +18,21 @@ public:
 	void write(std::string text) {
 		out_text.append(text.c_str());
 	}
-	QString out_text;
+
+	void Clear() {
+		out_text.clear();
+	}
+	static Redirector& Get() {
+		static Redirector global_instance;
+		return global_instance;
+	}
 };
 
-Redirector redirect_stream;
 PYBIND11_EMBEDDED_MODULE(redirector, m) {
 	m.doc() = "pybind11 stdout/stderr redirection module";
 	py::class_<Redirector>(m, "Redirector")
-		.def("write", &Redirector::write);
-	m.def("readirect_stream", []() { return redirect_stream; });
-
+		.def("write", &Redirector::write)
+		.def_static("Get", &Redirector::Get);
 }
 
 
@@ -68,13 +74,11 @@ QPythonConsole::QPythonConsole(QWidget *parent, const QString &welcomeText) : QC
 	f.setStyleHint(QFont::Monospace);
 	this->setFont(f);
 	
-	//py::module::import("sys").attr("stdout") = py::module::import("redirector").attr("write");
 	try {
 		py::exec("import redirector");
 		py::exec("import sys");
-		//py::exec("sys.stdout = redirector.readirect_stream");
-		//py::exec("sys.stderr = redirector.readirect_stream");
-		py::exec("print('asdfasdfasf')");
+		py::exec("sys.stdout = redirector.Redirector.Get()");
+		py::exec("sys.stderr = redirector.Redirector.Get()");
 	} catch (py::error_already_set &e) {
 		this->printCommandExecutionResults(e.what(), QConsole::Error);
 	}
@@ -101,9 +105,11 @@ void QPythonConsole::ExecuteAndPrintResults(const QString &command) {
 			auto result = py::eval<py::eval_single_statement>(ba.data());
 		}
 		
-		this->printCommandExecutionResults(coutstream.str().c_str(), QConsole::Complete);
+		this->printCommandExecutionResults(out_text, QConsole::Complete);
+		Redirector::Get().Clear();
 	}
 	catch (py::error_already_set &e) {
 		this->printCommandExecutionResults(e.what(), QConsole::Error);
+		Redirector::Get().Clear();
 	}
 }
