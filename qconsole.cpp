@@ -312,10 +312,10 @@ void QConsole::handleReturnKeyPress()
     //Get the command to validate
     QString command = getCurrentCommand();
     //execute the command and get back its text result and its return value
-    if (isCommandComplete(command))
+	if (isCommandComplete(command)) {
         pExecCommand(command);
-    else
-    {
+	} 
+	else {
         append("");
         moveCursor(QTextCursor::EndOfLine);
     }
@@ -528,24 +528,24 @@ void QConsole::replaceCurrentCommand(const QString &newCommand)
 {
     QTextCursor cursor = textCursor();
     cursor.movePosition(QTextCursor::StartOfLine);
-    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, promptLength);
-    cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
-    cursor.insertText(newCommand);
+cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, promptLength);
+cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+cursor.insertText(newCommand);
 }
 
 //default implementation: command always complete
 bool QConsole::isCommandComplete(const QString &)
 {
-    return true;
+	return true;
 }
 
 //Tests whether the cursor is in th edition zone or not (after the prompt
 //or in the next lines (in case of multi-line mode)
 bool QConsole::isInEditionZone()
 {
-    const int para = textCursor().blockNumber();
-    const int index = textCursor().columnNumber();
-    return (para > promptParagraph) || ( (para == promptParagraph) && (index >= promptLength) );
+	const int para = textCursor().blockNumber();
+	const int index = textCursor().columnNumber();
+	return (para > promptParagraph) || ((para == promptParagraph) && (index >= promptLength));
 }
 
 
@@ -553,33 +553,33 @@ bool QConsole::isInEditionZone()
 //or in the next lines (in case of multi-line mode)
 bool QConsole::isInEditionZone(const int& pos)
 {
-    QTextCursor cur = textCursor();
-    cur.setPosition(pos);
-    const int para = cur.blockNumber();
-    const int index = cur.columnNumber();
-    return (para > promptParagraph) || ( (para == promptParagraph) && (index >= promptLength) );
+	QTextCursor cur = textCursor();
+	cur.setPosition(pos);
+	const int para = cur.blockNumber();
+	const int index = cur.columnNumber();
+	return (para > promptParagraph) || ((para == promptParagraph) && (index >= promptLength));
 }
 
 
 //Tests whether the current selection is in th edition zone or not
 bool QConsole::isSelectionInEditionZone()
 {
-    QTextCursor cursor(document());
-    int range[2];
+	QTextCursor cursor(document());
+	int range[2];
 
-    range[0] = textCursor().selectionStart();
-    range[1] = textCursor().selectionEnd();
-    for (int i = 0; i < 2; i++)
-    {
-        cursor.setPosition(range[i]);
-        int para = cursor.blockNumber();
-        int index = cursor.columnNumber();
-        if ((para <= promptParagraph) && ( (para != promptParagraph) || (index < promptLength) ))
-        {
-            return false;
-        }
-    }
-    return true;
+	range[0] = textCursor().selectionStart();
+	range[1] = textCursor().selectionEnd();
+	for (int i = 0; i < 2; i++)
+	{
+		cursor.setPosition(range[i]);
+		int para = cursor.blockNumber();
+		int index = cursor.columnNumber();
+		if ((para <= promptParagraph) && ((para != promptParagraph) || (index < promptLength)))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 
@@ -587,42 +587,67 @@ bool QConsole::isSelectionInEditionZone()
 //And emits a signal (should be called by reimplementations)
 QString QConsole::addCommandToHistory(const QString &command)
 {
-    //Add the command to the recordedScript list
-    recordedScript.append(command);
-    //update the history and its index
-    QString modifiedCommand = command;
-    modifiedCommand.replace("\n", "\\n");
-    history.append(modifiedCommand);
-    historyIndex = history.size();
-    //emit the commandExecuted signal
-    Q_EMIT commandAddedToHistory(modifiedCommand);
-    return "";
+	//Add the command to the recordedScript list
+	recordedScript.append(command);
+	//update the history and its index
+	QString modifiedCommand = command;
+	modifiedCommand.replace("\n", "\\n");
+	history.append(modifiedCommand);
+	historyIndex = history.size();
+	//emit the commandExecuted signal
+	Q_EMIT commandAddedToHistory(modifiedCommand);
+	return "";
 }
 
 //pExecCommand(QString) executes the command and displays back its result
 void QConsole::pExecCommand(const QString &command)
 {
-    isLocked = true;
+	isLocked = true;
 
-    addCommandToHistory(command);
+	addCommandToHistory(command);
 
-    Q_EMIT execCommand(command);
+	Q_EMIT execCommand(command);
 }
 
 void QConsole::printCommandExecutionResults(const QString &result, ResultType type)
 {
-    //According to the return value, display the result either in red or in blue
-    if (type == ResultType::Error)
-        setTextColor(errColor_);
-    else
-        setTextColor(outColor_);
+	//According to the return value, display the result either in red or in blue
+	if (type == ResultType::Error)
+		setTextColor(errColor_);
+	else
+		setTextColor(outColor_);
 
-    append(result);
+	append(result);
 
-    //Display the prompt again
-    if (type == ResultType::Complete || type == ResultType::Error) {
-        if (!result.endsWith("\n"))
-            append("\n");
+	//Display the prompt again
+	if (type == ResultType::Complete || type == ResultType::Error) {
+		bool addNewLine{ false };
+
+		//if (history.isEmpty()) {
+		//	// history is empty so do nothing.
+		//}
+		//else {
+		//	// check if our history had a new line in it.
+		//	if (history.last().isEmpty() || history.last().endsWith("\n") || history.last().endsWith("\\n")) {
+		//		// the last history already had a new line so we do not add another one.
+		//	}
+		//	else {
+		//		addNewLine = true;
+		//	}
+		//}
+
+		if (result.isEmpty() || result.endsWith("\n")) {
+			// result already has new line so we do not add one.
+		}
+		else {
+			// result has no new line so we add one.
+			addNewLine = true;
+		}
+
+
+		if(addNewLine) {
+			append("\n");
+		}
 
         isLocked = false;
         displayPrompt();

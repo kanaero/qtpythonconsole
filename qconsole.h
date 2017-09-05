@@ -204,6 +204,7 @@ Q_SIGNALS:
 
 private:
     bool isLocked;
+	bool newLineAfterCommand;
 
     void handleTabKeyPress();
     void handleReturnKeyPress();

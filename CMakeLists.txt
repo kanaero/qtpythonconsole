@@ -1,13 +1,25 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(qpythonconsole)
-add_subdirectory(pybind11)
+
+if(NOT ${CMAKE_VERSION} VERSION_LESS 3.0.0)
+    cmake_policy(SET CMP0043 OLD)
+endif()
+
+#### Set path to your pybind11
+set(PYBIND11_DIR $ENV{NL_DIR}/pybind11)
+set(QT5_ROOT D:/Qt/5.10.0/msvc2017_64)
+
+list(APPEND CMAKE_MODULE_PATH ${PYBIND11_DIR}/tools)
+find_package(PythonLibsNew 3 REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(SYSTEM ${PYBIND11_DIR}/include)
 
 # Qt 5
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 if(MSVC)
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "C:/Qt/5.9.1/msvc2017_64")
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "C:/Qt/5.9.1/msvc2017_64/lib/cmake/Qt5")
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_ROOT})
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${QT5_ROOT}/lib/cmake/Qt5)
 endif()
 
 find_package(Qt5 COMPONENTS Widgets)
@@ -26,4 +38,4 @@ add_executable(example
   qpythonconsole.cpp
 )
 qt5_use_modules(example Widgets)
-target_link_libraries(example  pybind11::embed)
+target_link_libraries(example ${PYTHON_LIBRARIES})
