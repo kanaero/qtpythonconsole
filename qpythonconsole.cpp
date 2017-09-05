@@ -5,8 +5,23 @@
 #include <strstream>
 #include <sstream>
 
+// See below for information on redirection of str3eams.
+//http://eli.thegreenplace.net/2015/redirecting-all-kinds-of-stdout-in-python/
 
 namespace py = pybind11;
+
+struct stdout_redirect {
+	stdout_redirect(std::streambuf * new_buffer)
+		: old(std::cout.rdbuf(new_buffer))
+	{ }
+
+	~stdout_redirect() {
+		std::cout.rdbuf(old);
+	}
+
+private:
+	std::streambuf * old;
+};
 
 struct cout_redirect {
 	cout_redirect(std::streambuf * new_buffer)
@@ -57,6 +72,7 @@ void QPythonConsole::ExecuteAndPrintResults(const QString &command) {
 	QByteArray ba = command.toLocal8Bit();
 	std::stringbuf  coutstream;
 	std::stringbuf  cerrstream;
+	std::stringbuf  stdoutstream;
 
 	cout_redirect cout_guard(&coutstream);
 	cerr_redirect cerr_guard(&cerrstream);
