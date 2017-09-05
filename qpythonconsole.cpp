@@ -21,13 +21,12 @@ public:
 };
 
 Redirector redirect_stream;
-
 PYBIND11_EMBEDDED_MODULE(redirector, m) {
 	m.doc() = "pybind11 stdout/stderr redirection module";
 	py::class_<Redirector>(m, "Redirector")
-		.def("write", &Redirector::write)
-	py::object redirect_stream_obj = py::cast("Redirector");
-	m.attr("redirector_stream_obj") = redirect_stream;
+		.def("write", &Redirector::write);
+	m.def("readirect_stream", []() { return redirect_stream; });
+
 }
 
 
@@ -73,7 +72,8 @@ QPythonConsole::QPythonConsole(QWidget *parent, const QString &welcomeText) : QC
 	try {
 		py::exec("import redirector");
 		py::exec("import sys");
-		py::exec("sys.stdout = redirector.write");
+		//py::exec("sys.stdout = redirector.readirect_stream");
+		//py::exec("sys.stderr = redirector.readirect_stream");
 		py::exec("print('asdfasdfasf')");
 	} catch (py::error_already_set &e) {
 		this->printCommandExecutionResults(e.what(), QConsole::Error);
