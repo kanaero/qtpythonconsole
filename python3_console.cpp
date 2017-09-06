@@ -21,7 +21,7 @@ public:
 	Redirector() {}
 	virtual ~Redirector() {}
 	void write(std::string text) {
-		out_text.append(text);
+		::out_text.append(text);
 	}
 
 	void Clear() {
@@ -172,13 +172,9 @@ void Python3Console::ExecAndPrintCommand(const std::string &command) {
 	cout_redirect cout_guard(&coutstream);
 	cerr_redirect cerr_guard(&cerrstream);
 	try {
-		if (command.size()) {
-			auto result = py::eval<py::eval_statements>(command.c_str());
+		if (command.size() > 0) {
+			py::eval<py::eval_statements>(command.c_str());
 		}
-		else {
-			//auto result = py::eval<py::eval_single_statement>(command.c_str());
-		}
-
 		this->Print(out_text, SuccessMode::Successful);
 		Redirector::Get().Clear();
 	}
