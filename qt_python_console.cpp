@@ -28,13 +28,6 @@ public:
 	}
 };
 
-PYBIND11_EMBEDDED_MODULE(redirector, m) {
-	m.doc() = "pybind11 stdout/stderr redirection module";
-	py::class_<Redirector>(m, "Redirector")
-		.def("write", &Redirector::write)
-		.def_static("Get", &Redirector::Get);
-}
-
 
 
 struct cout_redirect {
@@ -93,7 +86,6 @@ void QPythonConsole::ExecuteAndPrintResults(const QString &command) {
 	QByteArray ba = command.toLocal8Bit();
 	std::stringbuf  coutstream;
 	std::stringbuf  cerrstream;
-	std::stringbuf  stdoutstream;
 
 	cout_redirect cout_guard(&coutstream);
 	cerr_redirect cerr_guard(&cerrstream);
