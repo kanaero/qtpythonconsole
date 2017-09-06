@@ -1,4 +1,4 @@
-#include "qpythonconsole.h"
+#include "qt_python_console.h"
 #include <QColor>
 #include <pybind11/embed.h>
 #include <iostream>
@@ -8,73 +8,8 @@
 
 namespace py = pybind11;
 
-
-
-static QString out_text;
-class Redirector {
-public:
-	Redirector() {}
-	virtual ~Redirector() {}
-	void write(std::string text) {
-		out_text.append(text.c_str());
-	}
-
-	void Clear() {
-		out_text.clear();
-	}
-	static Redirector& Get() {
-		static Redirector global_instance;
-		return global_instance;
-	}
-};
-
-
-
-struct cout_redirect {
-	cout_redirect(std::streambuf * new_buffer)
-		: old(std::cout.rdbuf(new_buffer))
-	{ }
-
-	~cout_redirect() {
-		std::cout.rdbuf(old);
-	}
-
-private:
-	std::streambuf * old;
-};
-
-struct cerr_redirect {
-	cerr_redirect(std::streambuf * new_buffer)
-		: old(std::cerr.rdbuf(new_buffer))
-	{ }
-
-	~cerr_redirect() {
-		std::cerr.rdbuf(old);
-	}
-
-private:
-	std::streambuf * old;
-};
-
-
-QPythonConsole::QPythonConsole(QWidget *parent, const QString &welcomeText) : QConsole(parent, welcomeText) {
-	connect(
-		this, &QConsole::execCommand,
-		this, &QPythonConsole::ExecuteAndPrintResults
-	);
-	this->setPrompt(">>>");
-	QFont f("unexistent");
-	f.setStyleHint(QFont::Monospace);
-	this->setFont(f);
-	
-	try {
-		py::exec("import redirector");
-		py::exec("import sys");
-		py::exec("sys.stdout = redirector.Redirector.Get()");
-		py::exec("sys.stderr = redirector.Redirector.Get()");
-	} catch (py::error_already_set &e) {
-		this->printCommandExecutionResults(e.what(), QConsole::Error);
-	}
+QPythonConsole::QPythonConsole(QWidget *parent, const QString &welcomeText) : QConsole(parent, welcomeText), Python3Console() 
+{
 }
 
 QPythonConsole::~QPythonConsole() {
@@ -82,26 +17,41 @@ QPythonConsole::~QPythonConsole() {
 }
 
 
+void QPythonConsole::Initialize()
+{
+	connect(
+		this, &QConsole::execCommand,
+		this, &QPythonConsole::ExecuteAndPrintResults
+	);
+	QFont f("unexistent");
+	f.setStyleHint(QFont::Monospace);
+	this->setFont(f);
+	Python3Console::Initialize();
+
+}
+
+void QPythonConsole::InsertText(CursorLocation where, std::string& text)
+{
+
+}
+
+void QPythonConsole::MoveCursor(CursorLocation where)
+{
+
+}
+
+void QPythonConsole::DisplayPrompt()
+{
+	this->displayPrompt();
+
+}
+
+void QPythonConsole::Print(const std::string &command, SuccessMode mode)
+{
+
+}
+
 void QPythonConsole::ExecuteAndPrintResults(const QString &command) {
 	QByteArray ba = command.toLocal8Bit();
-	std::stringbuf  coutstream;
-	std::stringbuf  cerrstream;
-
-	cout_redirect cout_guard(&coutstream);
-	cerr_redirect cerr_guard(&cerrstream);
-	try {
-		if (command.isEmpty()) {
-			auto result = py::eval<py::eval_statements>(ba.data());
-		}
-		else {
-			auto result = py::eval<py::eval_single_statement>(ba.data());
-		}
-		
-		this->printCommandExecutionResults(out_text, QConsole::Complete);
-		Redirector::Get().Clear();
-	}
-	catch (py::error_already_set &e) {
-		this->printCommandExecutionResults(e.what(), QConsole::Error);
-		Redirector::Get().Clear();
-	}
+	this->ExecAndPrintCommand(ba.data());
 }

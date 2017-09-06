@@ -10,7 +10,7 @@
     (at your option) any later version.
 */
 
-#include "qconsole.h"
+#include "qt_console.h"
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
