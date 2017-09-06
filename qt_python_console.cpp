@@ -48,7 +48,28 @@ void QPythonConsole::DisplayPrompt()
 
 void QPythonConsole::Print(const std::string &command, SuccessMode mode)
 {
+	if (mode == SuccessMode::Successful) {
+		this->printCommandExecutionResults(QString(command.c_str()), QConsole::Complete);
+	} else if (mode == SuccessMode::Error) {
+		this->printCommandExecutionResults(QString(command.c_str()), QConsole::Error);
+	}
+	else {
+		this->printCommandExecutionResults("Unknown Success Mode", QConsole::Error);
+	}
+}
 
+void QPythonConsole::SetNormalPrompt()
+{
+	Python3Console::SetNormalPrompt();
+	this->setPrompt(">>> ", false);
+	
+
+}
+
+void QPythonConsole::SetMultilinePrompt()
+{
+	Python3Console::SetMultilinePrompt();
+	this->setPrompt("... ", false);
 }
 
 void QPythonConsole::ExecuteAndPrintResults(const QString &command) {

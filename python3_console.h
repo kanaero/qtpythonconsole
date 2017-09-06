@@ -11,10 +11,12 @@ public:
 	static Python3Console& Get();
 	void Reset() {};
 	void Clear() {};
-	void SetNormalPrompt() { prompt = ">>> "; }
-	void SetMultilinePrompt() { prompt = "... "; }
+	
+	
 	void ReadKeyboard();
 	std::string& GetCurrentCommand() { return command; }
+
+	
 
 	// Interpreter related methods.
 	virtual void Initialize();
@@ -29,6 +31,8 @@ public:
 	//// Display related methods.
 	enum class CursorLocation { END, CURRENT };
 	enum class SuccessMode { Successful, Error };
+	virtual void SetNormalPrompt() { current_prompt = ">>> "; }
+	virtual void SetMultilinePrompt() { current_prompt = "... "; }
 	virtual void Append(std::string text) { printf("%s", text.c_str()); }
 	virtual void InsertText(CursorLocation where, std::string& text) { printf("%s", text.c_str()); }
 	virtual void MoveCursor(CursorLocation where) {}
@@ -38,7 +42,7 @@ public:
 
 	// Some internal variables.
 	int lines{ 0 };
-	std::string prompt;
+	std::string current_prompt;
 	bool read_keyboard{ true };
 	std::string line_buffer; // accumulates characters typed in one at at time.
 	std::string command;

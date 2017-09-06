@@ -15,6 +15,8 @@ public:
 	virtual void MoveCursor(CursorLocation where) override;
 	virtual void DisplayPrompt() override;
 	virtual void Print(const std::string &command, SuccessMode mode) override;
+	virtual void SetNormalPrompt() override;
+	virtual void SetMultilinePrompt() override;
 
 
 	public Q_SLOTS:

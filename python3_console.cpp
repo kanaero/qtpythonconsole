@@ -175,6 +175,9 @@ void Python3Console::ExecAndPrintCommand(const std::string &command) {
 		if (command.size() > 0) {
 			py::eval<py::eval_statements>(command.c_str());
 		}
+		else {
+			py::eval<py::eval_single_statement>(command.c_str());
+		}
 		this->Print(out_text, SuccessMode::Successful);
 		Redirector::Get().Clear();
 	}
@@ -185,7 +188,7 @@ void Python3Console::ExecAndPrintCommand(const std::string &command) {
 }
 
 void Python3Console::DisplayPrompt() {
-	printf("%s", prompt.c_str());
+	printf("%s", current_prompt.c_str());
 }
 void Python3Console::PrintHistory() {
 	printf("%s", "Print History Called");
