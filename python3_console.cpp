@@ -7,9 +7,12 @@
 #include <regex>
 #include <sstream>
 #include <iostream>
+#include <pybind11/iostream.h>
 
-#ifdef WIN32
+
+#ifdef _WIN32
 #include <conio.h>
+#include <windows.h>
 #endif
 
 namespace py = pybind11;
@@ -72,6 +75,7 @@ Python3Console::Python3Console() : lines(0) {
 }
 
 Python3Console::~Python3Console() {
+	this->Shutdown();
 }
 
 
@@ -79,6 +83,7 @@ void Python3Console::Initialize()
 {
 	SetNormalPrompt();
 	DisplayPrompt();
+
 	try {
 		py::exec("import redirector");
 		py::exec("import sys");
@@ -171,12 +176,16 @@ void Python3Console::ExecAndPrintCommand(const std::string &command) {
 
 	cout_redirect cout_guard(&coutstream);
 	cerr_redirect cerr_guard(&cerrstream);
+	//this->RedirectStdout();
+	//printf("this is stdout output\n");
+	//py::scoped_ostream_redirect output;
+
 	try {
 		if (command.size() > 0) {
-			py::eval<py::eval_statements>(command.c_str());
+			auto result = py::eval<py::eval_single_statement>(command.c_str());
 		}
 		else {
-			py::eval<py::eval_single_statement>(command.c_str());
+			auto result = py::eval<py::eval_single_statement>(command.c_str());
 		}
 		this->Print(out_text, SuccessMode::Successful);
 		Redirector::Get().Clear();
@@ -185,6 +194,7 @@ void Python3Console::ExecAndPrintCommand(const std::string &command) {
 		this->Print(e.what(), SuccessMode::Error);
 		Redirector::Get().Clear();
 	}
+	//this->RestoreStdout();
 }
 
 void Python3Console::DisplayPrompt() {
@@ -221,6 +231,56 @@ void Python3Console::ReadKeyboard() {
 			}
 		}
 	} while (ret > 0);
+#endif
+}
+
+void Python3Console::RedirectStdout()
+{
+
+	//https://stackoverflow.com/questions/955962/how-to-buffer-stdout-in-memory-and-write-it-from-a-dedicated-thread
+	//https://www.thecodingforums.com/threads/redirect-stdout-to-a-buffer.705392/
+	// 
+#if defined(_WIN32)
+	//CreatePipe( &hReadPipe, &hWritePipe, NULL, 1024);
+	//SetStdHandle(STD_OUTPUT_HANDLE, hWritePipe);
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+	// Create a new console window.
+	if (!AllocConsole()) return;
+
+	// Set the screen buffer to be larger than normal (this is optional).
+	if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
+	{
+		csbi.dwSize.Y = 1000; // any useful number of lines...
+		SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), csbi.dwSize);
+	}
+
+
+	// Redirect "stdin" to the console window.
+	if (!freopen("CONIN$", "w", stdin)) return;
+
+
+	// Redirect "stderr" to the console window.
+	if (!freopen("CONOUT$", "w", stderr)) return;
+
+	// Redirect "stdout" to the console window.
+	if (!freopen("CONOUT$", "w", stdout)) return;
+
+
+	// Turn off buffering for "stdout" ("stderr" is unbuffered by default).
+
+	setbuf(stdout, NULL);
+
+#endif
+}
+
+void Python3Console::RestoreStdout()
+{
+#if defined(_WIN32)
+	//CloseHandle(hWritePipe);
+	//ReadFile(hReadPipe, stdout_buffer, 19, &nr, NULL);
+	//CloseHandle(hReadPipe);
+	//WriteFile(GetStdHandle(STD_ERROR_HANDLE), stdout_buffer, nr, &nw, NULL);
 #endif
 }
 

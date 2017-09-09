@@ -12,10 +12,17 @@ public:
 	void Reset() {};
 	void Clear() {};
 	
-	
+
 	void ReadKeyboard();
 	std::string& GetCurrentCommand() { return command; }
 
+#if defined(_WIN32)
+	//HANDLE hReadPipe, hWritePipe;
+	//DWORD nr, nw;
+#endif
+	char stdout_buffer[1024 + 1];
+	void RedirectStdout();
+	void RestoreStdout();
 	
 
 	// Interpreter related methods.
